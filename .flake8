@@ -1,0 +1,6 @@
+[flake8]
+exclude = .git,__pycache__,./manage.py,./news/migrations
+application_import_names = NewsPaper
+ignore = D100, D101, D102, D103, D105, D106, E501
+
+import_order_style = google

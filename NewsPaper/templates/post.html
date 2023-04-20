@@ -1,0 +1,75 @@
+{% extends 'flatpages/default.html' %}
+{% load custom_filters %}
+{% load custom_tags %}
+
+{% block title %}
+{{ object.post_header }}
+{% endblock title %}
+
+{% block content %}
+<h1>{{ post.post_header|censor }} ({{ post.get_type_choice_display }})</h1>
+<h2>{{ post.post_create_time|date:'M d Y' }}</h2>
+<h2>Рейтинг поста: {{ post.post_rating }}</h2>
+<hr>
+<h1>{{post.post_text|censor}}</h1>
+<hr>
+<h2 align="left">Комментарии:</h2>
+{% for comment in comments %}
+    <div class="comment">
+        <p class="info">
+            Комментарий №{{ forloop.counter }}, написанный {{ comment.comment_author }}
+            {{ comment.comm_create_time }}
+        </p>
+        {{ comment.comment_text|linebreaks }}
+        <hr>
+    </div>
+{% empty %}
+    <p>К этому посту ещё нет комментариев</p>
+{% endfor %}
+{% if new_comment %}
+    <h2>Ващ комментарий был добавлен.</h2>
+{% else %}
+    <h2>Добавить новый комментарий</h2>
+    <form action="." method="post">
+        {{ comment_form.as_p }}
+        {% csrf_token %}
+        <p><input type="submit" value="Добавить комментарий"></p>
+    </form>
+{% endif %}
+{# Информация о предыдущих страницах #}
+{% if page_obj.has_previous %}
+   <a href="?page=1">1</a>
+   {% if page_obj.previous_page_number != 1 %}
+       ...
+       <a href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+   {% endif %}
+{% endif %}
+
+{# Информация о текущей странице #}
+{{ page_obj.number }}
+
+{# Информация о следующих страницах #}
+{% if page_obj.has_next %}
+   <a href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+   {% if paginator.num_pages != page_obj.next_page_number %}
+       ...
+       <a href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+   {% endif %}
+{% endif %}
+<hr>
+{% if post.type_choice == 'NE' %}
+    {% if perms.news.change_post %}
+    <a href="{% url 'news_edit' pk=post.id %}">Изменить</a>
+    {% endif %}
+    {% if perms.news.delete_post %}
+    <a href="{% url 'news_delete' post.id %}">Удалить</a>
+    {% endif %}
+{% elif post.type_choice == 'AR' %}
+    {% if perms.news.change_post %}
+    <a href="{% url 'articles_edit' pk=post.id %}">Изменить</a>
+    {% endif %}
+    {% if perms.news.delete_post %}
+    <a href="{% url 'articles_delete' post.id %}">Удалить</a>
+    {% endif %}
+{% endif %}
+{% endblock content %}

@@ -1,0 +1,92 @@
+{% extends 'flatpages/default.html' %}
+{% load custom_filters %}
+{% load custom_tags %}
+
+{% block title %}
+Все посты
+{% endblock title %}
+
+{% block content %}
+   <h1>Все новости и статьи</h1>
+   <hr>
+   <h2>Всего постов: {{ all_posts.count }}</h2>
+   <hr>
+   {% if perms.news.add_post %}
+      <a href="{% url 'news_create' %}">Добавить новость</a> <a href="{% url 'article_create' %}">Добавить статью</a>
+   {% endif %}
+   {% if posts %}
+       <table>
+           <thead>
+               <tr>
+                   <th>Заголовок</th>
+                   <th>Дата публикации</th>
+                   <th>Предварительный просмотр</th>
+                   <th>Автор</th>
+                   <th>Категория</th>
+                   <th>Рейтинг</th>
+                   <th>Тип поста</th>
+                   {% if perms.news.delete_post %}
+                        <th>Операции с постом</th>
+                   {% elif perms.news.change_post %}
+                        <th>Операции с постом</th>
+                   {% endif %}
+               </tr>
+           </thead>
+           {% for post in posts %}
+           <tr class="{% cycle 'blue' 'white' %}">
+               <td>
+                   <a href="{% url 'post_detail' post.id %}"> {{ post.post_header|censor }}</a>
+               </td>
+               <td>{{ post.post_create_time|date:'M d Y' }}</td>
+               <td>{{ post.post_text|truncatechars:20|censor }}</td>
+               <td>
+                    <a href="{% url 'author_detail' post.author_post.id %}"> {{ post.author_post }}</a>
+               </td>
+               <td>{{ post.post_category.get.category_name }}</td>
+               <td>{{ post.post_rating }}</td>
+               <td>{{ post.get_type_choice_display }}</td>
+               <td>
+                   {% if post.type_choice == 'NE' %}
+                        {% if perms.news.change_post %}
+                            <a href="{% url 'news_edit' pk=post.id %}">Изменить</a>
+                        {% endif %}
+                        {% if perms.news.delete_post %}
+                            <a href="{% url 'news_delete' post.id %}">Удалить</a>
+                        {% endif %}
+                   {% elif post.type_choice == 'AR' %}
+                        {% if perms.news.change_post %}
+                            <a href="{% url 'articles_edit' pk=post.id %}">Изменить</a>
+                        {% endif %}
+                        {% if perms.news.delete_post %}
+                            <a href="{% url 'articles_delete' post.id %}">Удалить</a>
+                        {% endif %}
+                   {% endif %}
+               </td>
+           </tr>
+           {% endfor %}
+
+       </table>
+   {% else %}
+       <h1>Авторы пока не потрудились написать ни одного поста!</h1>
+   {% endif %}
+    {# Информация о предыдущих страницах #}
+   {% if page_obj.has_previous %}
+       <a href="?page=1">1</a>
+       {% if page_obj.previous_page_number != 1 %}
+           ...
+           <a href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+       {% endif %}
+   {% endif %}
+
+   {# Информация о текущей странице #}
+   {{ page_obj.number }}
+
+   {# Информация о следующих страницах #}
+   {% if page_obj.has_next %}
+       <a href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+       {% if paginator.num_pages != page_obj.next_page_number %}
+           ...
+           <a href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+       {% endif %}
+   {% endif %}
+{% endblock content %}

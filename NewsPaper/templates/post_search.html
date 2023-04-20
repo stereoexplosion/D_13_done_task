@@ -1,0 +1,31 @@
+{% extends 'flatpages/default.html' %}
+{% load custom_filters %}
+{% load custom_tags %}
+
+{% block title %}
+Поиск поста
+{% endblock title %}
+
+{% block content %}
+<form method="GET">
+    {{ filter.form }}
+    {% csrf_token %}
+    <input type="submit" value="Найти">
+</form>
+    <table>
+        <thead>
+           <th>Заголовок</th>
+           <th>Дата публикации</th>
+           <th>Предварительный просмотр</th>
+        </thead>
+        {% for posts in filter.qs %}
+            <tr>
+                <td>
+                    <a href="{% url 'post_detail' posts.id %}">{{ posts.post_header|title|censor }}</a>
+                </td>
+                <td>{{ posts.post_create_time|date:'M d Y' }}</td>
+                <td>{{ posts.post_text|truncatechars:20|censor }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock content %}
